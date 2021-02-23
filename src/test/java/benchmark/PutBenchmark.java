@@ -15,7 +15,13 @@ import java.util.concurrent.TimeUnit;
 @State(Scope.Benchmark)
 public class PutBenchmark {
   protected static final Random RANDOM = new Random(System.currentTimeMillis());
+  /**
+   * Size of the ByteKeys.
+   */
   protected static final int BYTES_COUNT = 8;
+  /**
+   * Number of duplicate inputs.
+   */
   protected static final int DUPLICATES_COUNT = 5;
 
   private final Cache<BytesKey, String> putCache =
@@ -37,6 +43,7 @@ public class PutBenchmark {
   @Threads(value = 20)
   @BenchmarkMode(org.openjdk.jmh.annotations.Mode.AverageTime)
   public void putTest() {
+    // Each iteration prepares its own dataset but add it to the common cache.
     byte[] bytes = new byte[BYTES_COUNT];
     Set<Pair<BytesKey, String>> dataSet = new HashSet();
     for (int j = 0; j < 10000; j++) {
@@ -45,6 +52,7 @@ public class PutBenchmark {
       dataSet.add(new Pair<>(tempKey, tempKey.toString()));
     }
 
+    // Adding data to the common cache.
     for (int n = 0; n < DUPLICATES_COUNT; n++) {
       for (Pair<BytesKey, String> pair : dataSet) {
         putCacheMap.put(pair._1, pair._2);
@@ -59,6 +67,7 @@ public class PutBenchmark {
   @Threads(value = 20)
   @BenchmarkMode(org.openjdk.jmh.annotations.Mode.AverageTime)
   public void putIfTest() {
+    // Each iteration prepares its own dataset but add it to the common cache.
     byte[] bytes = new byte[BYTES_COUNT];
     Set<Pair<BytesKey, String>> dataSet = new HashSet();
     for (int j = 0; j < 10000; j++) {
@@ -67,6 +76,7 @@ public class PutBenchmark {
       dataSet.add(new Pair<>(tempKey, tempKey.toString()));
     }
 
+    // Adding data to the common cache.
     for (int n = 0; n < DUPLICATES_COUNT; n++) {
       for (Pair<BytesKey, String> pair : dataSet) {
         putIfCacheMap.putIfAbsent(pair._1, pair._2);
@@ -81,6 +91,7 @@ public class PutBenchmark {
   @Threads(value = 20)
   @BenchmarkMode(org.openjdk.jmh.annotations.Mode.AverageTime)
   public void computeTest() {
+    // Each iteration prepares its own dataset but add it to the common cache.
     byte[] bytes = new byte[BYTES_COUNT];
     Set<Pair<BytesKey, String>> dataSet = new HashSet();
     for (int j = 0; j < 10000; j++) {
@@ -89,6 +100,7 @@ public class PutBenchmark {
       dataSet.add(new Pair<>(tempKey, tempKey.toString()));
     }
 
+    // Adding data to the common cache.
     for (int n = 0; n < DUPLICATES_COUNT; n++) {
       for (Pair<BytesKey, String> pair : dataSet) {
         computeCacheMap.computeIfAbsent(pair._1, key -> pair._2);
