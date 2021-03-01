@@ -14,25 +14,23 @@ import java.util.concurrent.TimeUnit;
 
 @State(Scope.Benchmark)
 public class PutBenchmark {
-  /**
-   * Size of the ByteKeys.
-   */
+  /** Size of the ByteKeys. */
   protected static final int BYTES_COUNT = 8;
-  /**
-   * Number of duplicate inputs.
-   */
+  /** Number of duplicate inputs. */
   protected static final int DUPLICATES_COUNT = 5;
 
+  protected static final int CACHE_SIZE = 100_000;
+
   private final Cache<BytesKey, String> putCache =
-          Caffeine.newBuilder().maximumSize(1_000_000).expireAfterWrite(1, TimeUnit.DAYS).build();
+      Caffeine.newBuilder().maximumSize(CACHE_SIZE).expireAfterWrite(1, TimeUnit.DAYS).build();
   public final ConcurrentMap<BytesKey, String> putCacheMap = putCache.asMap();
 
   private final Cache<BytesKey, String> putIfCache =
-      Caffeine.newBuilder().maximumSize(1_000_000).expireAfterWrite(1, TimeUnit.DAYS).build();
+      Caffeine.newBuilder().maximumSize(CACHE_SIZE).expireAfterWrite(1, TimeUnit.DAYS).build();
   public final ConcurrentMap<BytesKey, String> putIfCacheMap = putIfCache.asMap();
 
   private final Cache<BytesKey, String> computeCache =
-          Caffeine.newBuilder().maximumSize(1_000_000).expireAfterWrite(1, TimeUnit.DAYS).build();
+      Caffeine.newBuilder().maximumSize(CACHE_SIZE).expireAfterWrite(1, TimeUnit.DAYS).build();
   public final ConcurrentMap<BytesKey, String> computeCacheMap = computeCache.asMap();
 
   @Benchmark
