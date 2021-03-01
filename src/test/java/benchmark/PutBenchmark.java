@@ -7,14 +7,13 @@ import datastructures.BytesKey;
 import org.openjdk.jmh.annotations.*;
 
 import java.util.HashSet;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 @State(Scope.Benchmark)
 public class PutBenchmark {
-  protected static final Random RANDOM = new Random(System.currentTimeMillis());
   /**
    * Size of the ByteKeys.
    */
@@ -47,7 +46,7 @@ public class PutBenchmark {
     byte[] bytes = new byte[BYTES_COUNT];
     Set<Pair<BytesKey, String>> dataSet = new HashSet();
     for (int j = 0; j < 10000; j++) {
-      RANDOM.nextBytes(bytes);
+      ThreadLocalRandom.current().nextBytes(bytes);
       BytesKey tempKey = new BytesKey(bytes);
       dataSet.add(new Pair<>(tempKey, tempKey.toString()));
     }
@@ -71,7 +70,7 @@ public class PutBenchmark {
     byte[] bytes = new byte[BYTES_COUNT];
     Set<Pair<BytesKey, String>> dataSet = new HashSet();
     for (int j = 0; j < 10000; j++) {
-      RANDOM.nextBytes(bytes);
+      ThreadLocalRandom.current().nextBytes(bytes);
       BytesKey tempKey = new BytesKey(bytes);
       dataSet.add(new Pair<>(tempKey, tempKey.toString()));
     }
@@ -95,7 +94,7 @@ public class PutBenchmark {
     byte[] bytes = new byte[BYTES_COUNT];
     Set<Pair<BytesKey, String>> dataSet = new HashSet();
     for (int j = 0; j < 10000; j++) {
-      RANDOM.nextBytes(bytes);
+      ThreadLocalRandom.current().nextBytes(bytes);
       BytesKey tempKey = new BytesKey(bytes);
       dataSet.add(new Pair<>(tempKey, tempKey.toString()));
     }
