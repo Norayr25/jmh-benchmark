@@ -1,106 +1,60 @@
 package benchmark;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.wavefront.sdk.common.Pair;
-import datastructures.BytesKey;
 import org.openjdk.jmh.annotations.*;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
 
 @State(Scope.Benchmark)
 public class PutBenchmark {
-  /** Size of the ByteKeys. */
-  protected static final int BYTES_COUNT = 8;
-  /** Number of duplicate inputs. */
-  protected static final int DUPLICATES_COUNT = 5;
 
-  protected static final int CACHE_SIZE = 100_000;
-
-  private final Cache<BytesKey, String> putCache =
-      Caffeine.newBuilder().maximumSize(CACHE_SIZE).expireAfterWrite(1, TimeUnit.DAYS).build();
-  public final ConcurrentMap<BytesKey, String> putCacheMap = putCache.asMap();
-
-  private final Cache<BytesKey, String> putIfCache =
-      Caffeine.newBuilder().maximumSize(CACHE_SIZE).expireAfterWrite(1, TimeUnit.DAYS).build();
-  public final ConcurrentMap<BytesKey, String> putIfCacheMap = putIfCache.asMap();
-
-  private final Cache<BytesKey, String> computeCache =
-      Caffeine.newBuilder().maximumSize(CACHE_SIZE).expireAfterWrite(1, TimeUnit.DAYS).build();
-  public final ConcurrentMap<BytesKey, String> computeCacheMap = computeCache.asMap();
+  protected final int spansSize = 1000000;
+  protected final int traceSpansSize = 1000;
+  protected final int tracesSize = 1000000;
+  protected static final Random RANDOM = new Random(System.currentTimeMillis());
+  protected final Vector<String> spans = new Vector<>();
 
   @Benchmark
-  @Fork(value = 20)
-  @Warmup(iterations = 0)
-  @Measurement(iterations = 1)
-  @Threads(value = 20)
+  @Fork(value = 2)
+  @Warmup(iterations = 1)
+  @Measurement(iterations = 3)
+  @Threads(value = 1)
   @BenchmarkMode(org.openjdk.jmh.annotations.Mode.AverageTime)
-  public void putTest() {
-    // Each iteration prepares its own dataset but add it to the common cache.
-    byte[] bytes = new byte[BYTES_COUNT];
-    Set<Pair<BytesKey, String>> dataSet = new HashSet();
-    for (int j = 0; j < 10000; j++) {
-      ThreadLocalRandom.current().nextBytes(bytes);
-      BytesKey tempKey = new BytesKey(bytes);
-      dataSet.add(new Pair<>(tempKey, tempKey.toString()));
+  public void Test_LinkedHashSet() {
+    Set<String> uniqueSpans = new LinkedHashSet<>();
+
+    for (int i = 0; i < spansSize; i++) {
+      spans.add("span" + i);
     }
 
-    // Adding data to the common cache.
-    for (int n = 0; n < DUPLICATES_COUNT; n++) {
-      for (Pair<BytesKey, String> pair : dataSet) {
-        putCacheMap.put(pair._1, pair._2);
+    // Testing the speed of adding a LinkedHashSet.
+    // Each trace could have maximum 1000 spans.
+    for (int i = 0; i < tracesSize; i++) {
+      for (int j = 0; j < traceSpansSize; j++) {
+        int index = RANDOM.nextInt(spansSize);
+        uniqueSpans.add(spans.get(index));
       }
     }
   }
 
   @Benchmark
-  @Fork(value = 20)
-  @Warmup(iterations = 0)
-  @Measurement(iterations = 1)
-  @Threads(value = 20)
+  @Fork(value = 2)
+  @Warmup(iterations = 1)
+  @Measurement(iterations = 3)
+  @Threads(value = 1)
   @BenchmarkMode(org.openjdk.jmh.annotations.Mode.AverageTime)
-  public void putIfTest() {
-    // Each iteration prepares its own dataset but add it to the common cache.
-    byte[] bytes = new byte[BYTES_COUNT];
-    Set<Pair<BytesKey, String>> dataSet = new HashSet();
-    for (int j = 0; j < 10000; j++) {
-      ThreadLocalRandom.current().nextBytes(bytes);
-      BytesKey tempKey = new BytesKey(bytes);
-      dataSet.add(new Pair<>(tempKey, tempKey.toString()));
+  public void Test_HashSet() {
+    Set<String> uniqueSpans = new HashSet<>();
+
+    for (int i = 0; i < spansSize; i++) {
+      spans.add("span" + i);
     }
 
-    // Adding data to the common cache.
-    for (int n = 0; n < DUPLICATES_COUNT; n++) {
-      for (Pair<BytesKey, String> pair : dataSet) {
-        putIfCacheMap.putIfAbsent(pair._1, pair._2);
-      }
-    }
-  }
-
-  @Benchmark
-  @Fork(value = 20)
-  @Warmup(iterations = 0)
-  @Measurement(iterations = 1)
-  @Threads(value = 20)
-  @BenchmarkMode(org.openjdk.jmh.annotations.Mode.AverageTime)
-  public void computeTest() {
-    // Each iteration prepares its own dataset but add it to the common cache.
-    byte[] bytes = new byte[BYTES_COUNT];
-    Set<Pair<BytesKey, String>> dataSet = new HashSet();
-    for (int j = 0; j < 10000; j++) {
-      ThreadLocalRandom.current().nextBytes(bytes);
-      BytesKey tempKey = new BytesKey(bytes);
-      dataSet.add(new Pair<>(tempKey, tempKey.toString()));
-    }
-
-    // Adding data to the common cache.
-    for (int n = 0; n < DUPLICATES_COUNT; n++) {
-      for (Pair<BytesKey, String> pair : dataSet) {
-        computeCacheMap.computeIfAbsent(pair._1, key -> pair._2);
+    // Testing the speed of adding a HashSet.
+    // Each trace could have maximum 1000 spans.
+    for (int i = 0; i < tracesSize; i++) {
+      for (int j = 0; j < traceSpansSize; j++) {
+        int index = RANDOM.nextInt(spansSize);
+        uniqueSpans.add(spans.get(index));
       }
     }
   }
